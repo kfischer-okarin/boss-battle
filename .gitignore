@@ -1,0 +1,11 @@
+vendor
+.bundle
+
+# Smaug
+game/builds
+game/metadata/game_metadata.txt
+
+# Emacs
+*~
+.\#*
+\#*\#
