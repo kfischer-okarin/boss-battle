@@ -54,21 +54,25 @@ FACING_ANGLES = {
 
 def process_input(args)
   key_held = args.inputs.keyboard.key_held
-  if key_held.up
-    args.state.position[1] += 5
-    args.state.facing = :up
-  elsif key_held.down
-    args.state.position[1] -= 5
-    args.state.facing = :down
-  end
 
-  if key_held.left
-    args.state.position[0] -= 5
-    args.state.facing = :left
-  elsif key_held.right
-    args.state.position[0] += 5
-    args.state.facing = :right
+  held_directions = %i[up down left right].select { |direction|
+    key_held.send(direction)
+  }
+  args.state.facing = held_directions.first if held_directions.size == 1
+
+  speed = 5
+  dx = 0
+  dx += speed if key_held.right
+  dx -= speed if key_held.left
+  dy = 0
+  dy += speed if key_held.up
+  dy -= speed if key_held.down
+  if !dx.zero? && !dy.zero?
+    dx *= 0.8
+    dy *= 0.8
   end
+  args.state.position[0] += dx
+  args.state.position[1] += dy
 end
 
 $gtk.reset
