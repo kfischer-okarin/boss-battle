@@ -109,16 +109,26 @@ def process_input(args)
 end
 
 def calc_leg_angles(hip, foot, thigh_length, shank_length)
-  d_squared = ((foot[0] - hip[0])**2) + ((foot[1] - hip[1])**2)
+  # Use minimum distance to avoid breaking on extremely small distances
+  d_squared = [((foot[0] - hip[0])**2) + ((foot[1] - hip[1])**2), 500].max
   d = Math.sqrt(d_squared)
 
-  a = ((thigh_length**2) - (shank_length**2) + d_squared) / (2 * d)
-  beta = Math.acos(a / thigh_length)
-  # $args.outputs.labels << [10, 680, "beta: #{beta.to_degrees.round}"]
   # atan2 is from x axis counterclockwise
   # subtract from pi/2 to get from y axis clockwise
   alpha = (Math::PI / 2) - Math.atan2(foot[1] - hip[1], foot[0] - hip[0])
-  # $args.outputs.labels << [10, 660, "alpha: #{alpha.to_degrees.round}"]
+  # $args.outputs.labels << [10, 680, "alpha: #{alpha.to_degrees.round}"]
+
+  if d > thigh_length + shank_length
+    return {
+      thigh_angle: alpha.to_degrees,
+      shank_angle: (Math::PI + alpha).to_degrees
+    }
+  end
+
+  a = ((thigh_length**2) - (shank_length**2) + d_squared) / (2 * d)
+  beta = Math.acos(a / thigh_length)
+  # $args.outputs.labels << [10, 660, "beta: #{beta.to_degrees.round}"]
+
   thigh_angle = alpha - beta
   # $args.outputs.labels << [10, 640, "thigh_angle: #{thigh_angle.to_degrees.round}"]
 
