@@ -86,6 +86,10 @@ def render_line(args, point, length, angle)
 end
 
 def process_input(args)
+  handle_movement(args)
+end
+
+def handle_movement(args)
   key_held = args.inputs.keyboard.key_held
 
   held_directions = %i[up down left right].select { |direction|
@@ -104,8 +108,10 @@ def process_input(args)
     dx *= 0.8
     dy *= 0.8
   end
-  args.state.position[0] += dx
-  args.state.position[1] += dy
+  # args.state.position[0] += dx
+  # args.state.position[1] += dy
+  args.state.foot_position[0] += dx
+  args.state.foot_position[1] += dy
 end
 
 def calc_leg_angles(hip, foot, thigh_length, shank_length)
