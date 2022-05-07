@@ -8,46 +8,168 @@ def tick(args)
   setup(args) if args.tick_count.zero?
   render(args)
   process_input(args)
+  update(args)
 end
 
 def setup(args)
-  args.state.position = [640, 360]
+  frame_w = 200
+  frame_h = 400
+  args.state.frame = { x: (1280 - frame_w) / 2, y: 50, w: frame_w, h: frame_h }
   args.state.facing = :down
-  args.state.hip_position = [640, 360]
-  args.state.thigh_length = 100
-  args.state.shank_length = 120
-  args.state.foot_position = [600, 200]
+  args.state.key_frames = [
+    {
+      tick: 0,
+      hip: { x: 0.5, y: 0.33 },
+      left_foot: { x: 0.09, y: 0.25 },
+      right_foot: { x: 0.7, y: 0.00 }
+    },
+    {
+      tick: 8,
+      hip: { x: 0.5, y: 0.31 },
+      left_foot: { x: 0.2, y: 0.18 },
+      right_foot: { x: 0.5, y: 0.00 }
+    },
+    {
+      tick: 16,
+      hip: { x: 0.5, y: 0.33 },
+      left_foot: { x: 0.73, y: 0.05 },
+      right_foot: { x: 0.08, y: 0.05 }
+    },
+    {
+      tick: 24,
+      hip: { x: 0.5, y: 0.32 },
+      left_foot: { x: 0.75, y: 0.00 },
+      right_foot: { x: 0.08, y: 0.2 }
+    },
+    {
+      tick: 32,
+      hip: { x: 0.5, y: 0.29 },
+      left_foot: { x: 0.2, y: 0.02 },
+      right_foot: { x: 0.4, y: 0.1 }
+    },
+    {
+      tick: 35,
+      hip: { x: 0.5, y: 0.33 },
+      left_foot: { x: 0.09, y: 0.25 },
+      right_foot: { x: 0.7, y: 0.00 }
+    }
+  ]
+  args.state.player_skeleton = {
+    hip: { x: 0.5, y: 0.3 },
+    thigh_length: 0.15,
+    shank_length: 0.2,
+    left_foot: { x: 0.2, y: 0.25 },
+    right_foot: { x: 0.7, y: 0.00 }
+  }
+  args.state.animation_frame = 0
+  args.state.animation_paused = false
+  args.state.animation_length = args.state.key_frames.last[:tick]
+  apply_key_frame(args.state.player_skeleton, args.state.key_frames, args.state.animation_frame)
+end
+
+def apply_key_frame(skeleton, key_frames, animation_frame)
+  previous_frame = key_frames.select { |frame| frame[:tick] <= animation_frame }.last
+  next_frame = key_frames.find { |frame| frame[:tick] > animation_frame }
+
+  factor = $args.easing.ease previous_frame[:tick],
+                             animation_frame,
+                             next_frame[:tick] - previous_frame[:tick],
+                             :identity
+
+  skeleton[:hip] = {
+    x: previous_frame[:hip].x + (factor * (next_frame[:hip].x - previous_frame[:hip].x)),
+    y: previous_frame[:hip].y + (factor * (next_frame[:hip].y - previous_frame[:hip].y))
+  }
+  skeleton[:left_foot] = {
+    x: previous_frame[:left_foot].x + (factor * (next_frame[:left_foot].x - previous_frame[:left_foot].x)),
+    y: previous_frame[:left_foot].y + (factor * (next_frame[:left_foot].y - previous_frame[:left_foot].y))
+  }
+  skeleton[:right_foot] = {
+    x: previous_frame[:right_foot].x + (factor * (next_frame[:right_foot].x - previous_frame[:right_foot].x)),
+    y: previous_frame[:right_foot].y + (factor * (next_frame[:right_foot].y - previous_frame[:right_foot].y))
+  }
 end
 
 def render(args)
-  # render_player(args)
-  render_leg(args)
+  render_frame(args)
+  render_player(args)
+end
+
+def render_frame(args)
+  rect = Rectangle.new(args.state.frame)
+  args.outputs.primitives << {
+    x: rect.x, y: rect.y, w: rect.w, h: rect.h,
+  }.border!
+end
+
+class Rectangle
+  attr_reader :x, :y, :w, :h
+
+  def initialize(rect)
+    @x = rect.x
+    @y = rect.y
+    @w = rect.w
+    @h = rect.h
+  end
+
+  def absolute_position(relative_position)
+    { x: absolute_x(relative_position.x), y: absolute_y(relative_position.y) }
+  end
+
+  def absolute_x(relative_x)
+    @x + (@w * relative_x)
+  end
+
+  def absolute_y(relative_y)
+    @y + (@h * relative_y)
+  end
+
+  def absolute_h(relative_h)
+    @h * relative_h
+  end
+
+  def absolute_w(relative_w)
+    @w * relative_w
+  end
+end
+
+class Scale
+  def initialize(scale:, center:)
+    @scale = scale
+    @center = center
+  end
+
+  def scale_length(length)
+    length * @scale
+  end
+
+  def scale_position(position)
+    {
+      x: @center.x + scale_length(position.x - @center.x),
+      y: @center.y + scale_length(position.y - @center.y)
+    }
+  end
 end
 
 def render_player(args)
-  height = 40
-  size = 40
-  args.outputs.primitives << height.times.map { |y|
-    {
-      x: args.state.position[0] - size.idiv(2),
-      y: args.state.position[1] - size.idiv(2) + y,
-      w: size,
-      h: size,
-      path: 'resources/player.png',
-      angle_anchor_x: 0.5,
-      angle_anchor_y: 0.4
-    }.sprite!(angle: FACING_ANGLES[args.state.facing])
-  }
-
-  args.outputs.primitives << {
-    x: args.state.position[0] - 5,
-    y: args.state.position[1] - 5,
-    w: 10,
-    h: 10,
-    r: 255,
-    g: 0,
-    b: 0
-  }.solid!
+  rect = Rectangle.new(args.state.frame)
+  right_leg_scale = Scale.new(scale: 1.05, center: rect.absolute_position([0.5, 0.5]))
+  left_leg_scale = Scale.new(scale: 0.95, center: rect.absolute_position([0.5, 0.5]))
+  skeleton = args.state.player_skeleton
+  render_leg(args,
+    left_leg_scale.scale_position(rect.absolute_position(skeleton[:hip])),
+    left_leg_scale.scale_position(rect.absolute_position(skeleton[:left_foot])),
+    left_leg_scale.scale_length(rect.absolute_h(skeleton[:thigh_length])),
+    left_leg_scale.scale_length(rect.absolute_h(skeleton[:shank_length])),
+    color: { r: 0, g: 128, b: 0 }
+  )
+  render_leg(args,
+    right_leg_scale.scale_position(rect.absolute_position(skeleton[:hip])),
+    right_leg_scale.scale_position(rect.absolute_position(skeleton[:right_foot])),
+    right_leg_scale.scale_length(rect.absolute_h(skeleton[:thigh_length])),
+    right_leg_scale.scale_length(rect.absolute_h(skeleton[:shank_length])),
+    color: { r: 128, g: 0, b: 0 }
+  )
 end
 
 FACING_ANGLES = {
@@ -57,17 +179,12 @@ FACING_ANGLES = {
   right: 270
 }.freeze
 
-def render_leg(args)
-  angles = calc_leg_angles(
-    args.state.hip_position,
-    args.state.foot_position,
-    args.state.thigh_length,
-    args.state.shank_length
-  )
-  render_line(args, args.state.hip_position, args.state.thigh_length, -angles[:thigh_angle])
-  render_line(args, args.state.foot_position, args.state.shank_length, -angles[:shank_angle])
-  render_point(args, args.state.hip_position, r: 0, g: 128, b: 0)
-  render_point(args, args.state.foot_position, r: 128, g: 128, b: 0)
+def render_leg(args, hip_position, foot_position, thigh_length, shank_length, color:)
+  angles = calc_leg_angles(hip_position, foot_position, thigh_length, shank_length)
+  render_line(args, hip_position, thigh_length, -angles[:thigh_angle], color)
+  render_line(args, foot_position, shank_length, -angles[:shank_angle], color)
+  # render_point(args, hip_position, r: 0, g: 128, b: 0)
+  # render_point(args, foot_position, r: 128, g: 128, b: 0)
 end
 
 def render_point(args, point, attributes)
@@ -77,16 +194,17 @@ def render_point(args, point, attributes)
   }.sprite!(attributes)
 end
 
-def render_line(args, point, length, angle)
+def render_line(args, point, length, angle, color)
   args.outputs.primitives << {
     x: point.x - 2, y: point.y - 2, w: 4, h: length,
     path: :pixel, r: 0, g: 0, b: 0,
     angle: angle, angle_anchor_x: 0.5, angle_anchor_y: 0
-  }.sprite!
+  }.sprite!(color)
 end
 
 def process_input(args)
   handle_movement(args)
+  handle_animation(args)
 end
 
 def handle_movement(args)
@@ -110,18 +228,29 @@ def handle_movement(args)
   end
   # args.state.position[0] += dx
   # args.state.position[1] += dy
-  args.state.foot_position[0] += dx
-  args.state.foot_position[1] += dy
+  args.state.frame.x += dx
+  args.state.frame.y += dy
+end
+
+def handle_animation(args)
+  key_down = args.inputs.keyboard.key_down
+  args.state.animation_paused = !args.state.animation_paused if key_down.space
+
+  if key_down.f
+    args.state.animation_frame = (args.state.animation_frame + 1) % args.state.animation_length
+  elsif key_down.b
+    args.state.animation_frame = (args.state.animation_frame - 1) % args.state.animation_length
+  end
 end
 
 def calc_leg_angles(hip, foot, thigh_length, shank_length)
   # Use minimum distance to avoid breaking on extremely small distances
-  d_squared = [((foot[0] - hip[0])**2) + ((foot[1] - hip[1])**2), 500].max
+  d_squared = [((foot.x - hip.x)**2) + ((foot.y - hip.y)**2), 500].max
   d = Math.sqrt(d_squared)
 
   # atan2 is from x axis counterclockwise
   # subtract from pi/2 to get from y axis clockwise
-  alpha = (Math::PI / 2) - Math.atan2(foot[1] - hip[1], foot[0] - hip[0])
+  alpha = (Math::PI / 2) - Math.atan2(foot.y - hip.y, foot.x - hip.x)
   # $args.outputs.labels << [10, 680, "alpha: #{alpha.to_degrees.round}"]
 
   if d > thigh_length + shank_length
@@ -151,6 +280,13 @@ def calc_leg_angles(hip, foot, thigh_length, shank_length)
     thigh_angle: thigh_angle.to_degrees,
     shank_angle: shank_angle.to_degrees
   }
+end
+
+def update(args)
+  unless args.state.animation_paused
+    args.state.animation_frame = (args.state.animation_frame + 1) % args.state.animation_length
+  end
+  apply_key_frame(args.state.player_skeleton, args.state.key_frames, args.state.animation_frame)
 end
 
 $gtk.reset
