@@ -132,14 +132,15 @@ def calc_leg_angles(hip, foot, thigh_length, shank_length)
   end
 
   a = ((thigh_length**2) - (shank_length**2) + d_squared) / (2 * d)
-  beta = Math.acos(a / thigh_length)
+  beta = Math.acos((a / thigh_length).clamp(-1, 1))
   # $args.outputs.labels << [10, 660, "beta: #{beta.to_degrees.round}"]
 
   thigh_angle = alpha - beta
   # $args.outputs.labels << [10, 640, "thigh_angle: #{thigh_angle.to_degrees.round}"]
 
   b = d - a
-  delta = Math.acos(b / shank_length)
+  delta = Math.acos((b / shank_length).clamp(-1, 1))
+
   # $args.outputs.labels << [10, 620, "delta: #{delta.to_degrees.round}"]
   gamma = alpha + Math::PI
   # $args.outputs.labels << [10, 600, "gamma: #{gamma.to_degrees.round}"]
