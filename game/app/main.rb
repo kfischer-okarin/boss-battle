@@ -18,40 +18,64 @@ def setup(args)
   args.state.facing = :down
   args.state.key_frames = [
     {
-      tick: 0,
-      hip: { x: 0.5, y: 0.33 },
-      left_foot: { x: 0.09, y: 0.25 },
-      right_foot: { x: 0.7, y: 0.00 }
+      tick: 0, # 6
+      hip: { x: 0.55, y: 0.35 },
+      left_foot: { x: 0.75, y: 0.05 },
+      right_foot: { x: 0.03, y: 0.11 }
     },
     {
-      tick: 8,
-      hip: { x: 0.5, y: 0.31 },
-      left_foot: { x: 0.2, y: 0.18 },
-      right_foot: { x: 0.5, y: 0.00 }
+      tick: 4, # 8
+      hip: { x: 0.55, y: 0.35 },
+      left_foot: { x: 0.84, y: 0.03 },
+      right_foot: { x: 0.08, y: 0.22 }
     },
     {
-      tick: 16,
-      hip: { x: 0.5, y: 0.33 },
-      left_foot: { x: 0.73, y: 0.05 },
-      right_foot: { x: 0.08, y: 0.05 }
+      tick: 8, # 10
+      hip: { x: 0.55, y: 0.32 },
+      left_foot: { x: 0.7, y: 0 },
+      right_foot: { x: 0.2, y: 0.25 }
     },
     {
-      tick: 24,
-      hip: { x: 0.5, y: 0.32 },
-      left_foot: { x: 0.75, y: 0.00 },
-      right_foot: { x: 0.08, y: 0.2 }
+      tick: 12, # 12
+      hip: { x: 0.55, y: 0.29 },
+      left_foot: { x: 0.25, y: 0.02 },
+      right_foot: { x: 0.45, y: 0.15 }
     },
     {
-      tick: 32,
-      hip: { x: 0.5, y: 0.29 },
-      left_foot: { x: 0.2, y: 0.02 },
-      right_foot: { x: 0.4, y: 0.1 }
+      tick: 16, # 14
+      hip: { x: 0.55, y: 0.35 },
+      left_foot: { x: 0.06, y: 0.1 },
+      right_foot: { x: 0.73, y: 0.08 }
     },
     {
-      tick: 35,
-      hip: { x: 0.5, y: 0.33 },
-      left_foot: { x: 0.09, y: 0.25 },
-      right_foot: { x: 0.7, y: 0.00 }
+      tick: 18, # 15
+      hip: { x: 0.55, y: 0.35 },
+      left_foot: { x: 0.05, y: 0.15 },
+      right_foot: { x: 0.82, y: 0.05 }
+    },
+    {
+      tick: 20, # 1
+      hip: { x: 0.55, y: 0.35 },
+      left_foot: { x: 0.13, y: 0.25 },
+      right_foot: { x: 0.75, y: 0.02 }
+    },
+    {
+      tick: 22, # 2
+      hip: { x: 0.55, y: 0.32 },
+      left_foot: { x: 0.18, y: 0.22 },
+      right_foot: { x: 0.65, y: 0.02 }
+    },
+    {
+      tick: 26, # 4
+      hip: { x: 0.55, y: 0.29 },
+      left_foot: { x: 0.45, y: 0.1 },
+      right_foot: { x: 0.25, y: 0.07 }
+    },
+    {
+      tick: 28, # 6
+      hip: { x: 0.55, y: 0.35 },
+      left_foot: { x: 0.75, y: 0.05 },
+      right_foot: { x: 0.03, y: 0.11 }
     }
   ]
   args.state.player_skeleton = {
